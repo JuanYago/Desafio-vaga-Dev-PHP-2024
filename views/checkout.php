@@ -14,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ano = $_POST['ano'];
 
     if ($associadoObj->pagarAnuidade($idAssociado, $ano)) {
-        echo "Anuidade paga com sucesso!";
+        echo '<div class="alert alert-success" role="alert">Anuidade paga com sucesso!</div>';
     } else {
-        echo "Erro ao pagar anuidade.";
+        echo '<div class="alert alert-danger" role="alert">Erro ao pagar anuidade.</div>';
     }
 }
 
@@ -35,28 +35,39 @@ unset($associado);
 <head>
     <meta charset="UTF-8">
     <title>Checkout - Anuidades Devidas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Checkout - Anuidades Devidas pelos Associados</h1>
+    <div class="container">
+        <h1 class="my-4">Checkout - Anuidades Devidas pelos Associados</h1>
 
-    <?php foreach ($associados as $associado): ?>
-        <h2>Associado: <?php echo $associado['nome']; ?></h2>
+        <?php foreach ($associados as $associado): ?>
+            <div class="card my-4">
+                <div class="card-header">
+                    Associado: <?php echo $associado['nome']; ?>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($associado['anuidadesDevidas'])): ?>
+                        <p class="card-text">O associado está com o pagamento em dia.</p>
+                    <?php else: ?>
+                        <p class="card-text">Valor Total Devido: R$ <?php echo number_format($associado['valorTotalDevido'], 2, ',', '.'); ?></p>
 
-        <?php if (empty($associado['anuidadesDevidas'])): ?>
-            <p>O associado está com o pagamento em dia.</p>
-        <?php else: ?>
-            <p>Valor Total Devido: R$ <?php echo number_format($associado['valorTotalDevido'], 2, ',', '.'); ?></p>
+                        <?php foreach ($associado['anuidadesDevidas'] as $anuidade): ?>
+                            <h3 class="card-title">Anuidade <?php echo $anuidade['ano']; ?></h3>
+                            <p class="card-text">Valor: R$ <?php echo number_format($anuidade['valor'], 2, ',', '.'); ?></p>
+                            <form action="checkout.php" method="post">
+                                <input type="hidden" name="id_associado" value="<?php echo $associado['id']; ?>">
+                                <input type="hidden" name="ano" value="<?php echo $anuidade['ano']; ?>">
+                                <button type="submit" class="btn btn-primary">Anuidade paga</button>
+                            </form>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-            <?php foreach ($associado['anuidadesDevidas'] as $anuidade): ?>
-    <h3>Anuidade <?php echo $anuidade['ano']; ?></h3>
-    <p>Valor: R$ <?php echo number_format($anuidade['valor'], 2, ',', '.'); ?></p>
-    <form action="checkout.php" method="post">
-        <input type="hidden" name="id_associado" value="<?php echo $associado['id']; ?>">
-        <input type="hidden" name="ano" value="<?php echo $anuidade['ano']; ?>">
-        <input type="submit" value="Anuidade paga">
-    </form>
-<?php endforeach; ?>
-        <?php endif; ?>
-    <?php endforeach; ?>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
